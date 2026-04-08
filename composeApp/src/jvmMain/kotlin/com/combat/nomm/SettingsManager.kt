@@ -1,5 +1,6 @@
 package com.combat.nomm
 
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
@@ -12,10 +13,27 @@ import java.io.File
 enum class Theme {
     LIGHT, DARK, SYSTEM;
 
+    @Composable
+    fun getStringName(): String = when (this) {
+        LIGHT -> StringResources.themeLight()
+        DARK -> StringResources.themeDark()
+        SYSTEM -> StringResources.themeSystem()
+    }
+    
     override fun toString(): String = when (this) {
         LIGHT -> "Light"
         DARK -> "Dark"
         SYSTEM -> "System"
+    }
+}
+
+@Serializable
+enum class AppLanguage {
+    EN, ZH;
+
+    override fun toString(): String = when (this) {
+        EN -> "English"
+        ZH -> "中文"
     }
 }
 
@@ -29,6 +47,7 @@ data class Configuration(
     val manifestUrl: String = "https://kopterbuzz.github.io/NOMNOM/manifest/manifest.json",
     val cachedManifest: Manifest = emptyList(),
     val hueValue: Float = 0.3f,
+    val language: AppLanguage = AppLanguage.EN,   // 新增：界面语言
 ) {
     val themeColor: Color
         get() = Color.hsv(hueValue * 360f, 1f, 1f)

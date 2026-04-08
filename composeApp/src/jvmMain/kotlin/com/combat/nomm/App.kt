@@ -24,7 +24,8 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import java.awt.datatransfer.StringSelection
 
-const val appName = "Nuclear Option Mod Manager"
+@Composable
+fun appName(): String = StringResources.appName()
 
 private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
@@ -110,13 +111,13 @@ fun App() {
                     AlertDialog(
                         onDismissRequest = { RepoMods.launchOptionDialog.value = false },
                         confirmButton = {
-                            TextButton(onClick = { RepoMods.launchOptionDialog.value = false }) { Text("Close") }
+                            TextButton(onClick = { RepoMods.launchOptionDialog.value = false }) { Text(StringResources.dialogClose()) }
                         },
-                        title = { Text("Copy Details") },
+                        title = { Text(StringResources.dialogCopyDetails()) },
                         text = {
                             SelectionContainer {
                                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    Text("To make BepInEx work on Linux you need to add the following to the Steam Launch Options for Nuclear Option.")
+                                    Text(StringResources.dialogBepInExLinuxInstructions())
 
                                     Surface(
                                         onClick = {

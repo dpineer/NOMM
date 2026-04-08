@@ -4,11 +4,13 @@ import kotlinx.serialization.json.Json
 import java.io.File
 
 object DataStorage {
+    private val appNameConstant = "Nuclear Option Mod Manager"
+    
     val osName = System.getProperty("os.name").lowercase()
     val configPath = when {
-        osName.contains("win") -> File(System.getenv("AppData"), appName)
-        osName.contains("mac") -> File(System.getProperty("user.home"), "Library/Application Support/$appName")
-        else -> File(System.getProperty("user.home"), ".config/$appName")
+        osName.contains("win") -> File(System.getenv("AppData"), appNameConstant)
+        osName.contains("mac") -> File(System.getProperty("user.home"), "Library/Application Support/$appNameConstant")
+        else -> File(System.getProperty("user.home"), ".config/$appNameConstant")
     }
     val configFile = File(configPath, "config.json")
 

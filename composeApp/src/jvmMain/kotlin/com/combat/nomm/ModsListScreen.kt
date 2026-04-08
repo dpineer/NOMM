@@ -87,7 +87,7 @@ fun SearchScreen(
                 item {
                     SelectionContainer {
                         Text(
-                            "Nothing here. huh",
+                            StringResources.libraryNothingHere(),
                             modifier = Modifier.padding(horizontal = 16.dp),
                             style = MaterialTheme.typography.labelLarge,
                             maxLines = 1,
@@ -183,7 +183,7 @@ fun RowScope.SearchBar(
         ),
         placeholder = {
             Text(
-                "Search mods...",
+                StringResources.searchMods(),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSecondary
             )
@@ -200,7 +200,7 @@ fun RowScope.SearchBar(
                 IconButton(onClick = { onQueryChange("") }) {
                     Icon(
                         painterResource(Res.drawable.close_24px),
-                        contentDescription = "Clear",
+                        contentDescription = StringResources.searchClear(),
                         tint = MaterialTheme.colorScheme.onSecondary
                     )
                 }
@@ -245,7 +245,7 @@ fun ModItem(mod: Extension, onClick: () -> Unit) {
                             MaterialTheme.typography.labelMedium.toSpanStyle().copy(fontWeight = FontWeight.Bold)
                         ) {
                             if (mod.authors.isNotEmpty()) {
-                                append(" by ")
+                                append(" 作者：")
                                 append(mod.authors.joinToString(", "))
 
                             }

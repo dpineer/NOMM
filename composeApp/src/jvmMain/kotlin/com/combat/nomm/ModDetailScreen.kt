@@ -116,7 +116,7 @@ fun ModTitleCard(
                     Text(
                         text = buildAnnotatedString {
                             if (mod.authors.isNotEmpty()) {
-                                append("by ")
+                                append("作者：")
                                 
                                 append(mod.authors.joinToString(", "))
                                 
@@ -199,7 +199,7 @@ fun ModTitleCard(
             ) {
                 Icon(
                     painter = painterResource(Res.drawable.close_24px),
-                    contentDescription = "Close",
+                    contentDescription = StringResources.modClose(),
                     modifier = Modifier.size(iconSize)
                 )
             }
@@ -335,7 +335,7 @@ fun ModActions(
                     ) {
                         Icon(
                             painterResource(Res.drawable.refresh_24px),
-                            contentDescription = "Update",
+                            contentDescription = StringResources.modUpdate(),
                             modifier = Modifier.size(iconSize),
                             tint = MaterialTheme.colorScheme.primary
                         )
@@ -379,7 +379,7 @@ fun ModActions(
                 ) {
                     Icon(
                         painterResource(Res.drawable.download_24px),
-                        contentDescription = "Install",
+                        contentDescription = StringResources.modInstall(),
                         modifier = Modifier.size(iconSize),
                         tint = MaterialTheme.colorScheme.primary
                     )
@@ -406,7 +406,7 @@ private fun ModNavigationBar(
         ) {
             NavItem(
                 selected = currentKey is ModNavigation.Details,
-                label = "Details",
+                label = StringResources.modDetails(),
                 icon = Res.drawable.info_24px,
             ) {
                 backStack.clear()
@@ -415,7 +415,7 @@ private fun ModNavigationBar(
 
             NavItem(
                 selected = currentKey is ModNavigation.Versions,
-                label = "Versions",
+                label = StringResources.modVersions(),
                 icon = Res.drawable.list_24px,
             ) {
                 backStack.clear()
@@ -626,7 +626,7 @@ fun ArtifactCard(
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
-                        text = "Hash: ${artifact.hash ?: "N/A"}",
+                        text = "${StringResources.artifactHash()} ${artifact.hash ?: StringResources.artifactNa()}",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontFamily = FontFamily.Monospace,
@@ -657,7 +657,7 @@ fun ArtifactCard(
                     ) {
                         Icon(
                             painter = if (isInstalled) painterResource(Res.drawable.check_24px) else painterResource(Res.drawable.download_24px),
-                            contentDescription = "Install",
+                            contentDescription = StringResources.modInstall(),
                             modifier = Modifier.size(24.dp),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -668,7 +668,7 @@ fun ArtifactCard(
                     ) {
                         Icon(
                             painter = painterResource(Res.drawable.rule_24px),
-                            contentDescription = "Dependencies",
+                            contentDescription = StringResources.modDependencies(),
                             modifier = Modifier.size(24.dp),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -720,11 +720,11 @@ fun ModVersionDependenciesContent(
             state = state,
         ) {
             if (artifact == null) {
-                item { Text("Artifact version not found.", color = MaterialTheme.colorScheme.error) }
+                item { Text(StringResources.artifactNotFound(), color = MaterialTheme.colorScheme.error) }
                 return@LazyColumn
             }
 
-            item { DependencyHeader("Extends", MaterialTheme.colorScheme.onSurface) }
+            item { DependencyHeader(StringResources.depsExtends(), MaterialTheme.colorScheme.onSurface) }
             if (artifact.extends != null) {
                 item {
                     val extendsVersion = artifact.extends.version
@@ -736,11 +736,11 @@ fun ModVersionDependenciesContent(
                     )
                 }
             } else {
-                item { EmptySectionText("None") }
+                item { EmptySectionText(StringResources.depsNone()) }
             }
 
             item {
-                DependencyHeader("Dependencies", MaterialTheme.colorScheme.onSurface)
+                DependencyHeader(StringResources.depsDependencies(), MaterialTheme.colorScheme.onSurface)
             }
             if (artifact.dependencies.isNotEmpty()) {
                 val groupedDeps = artifact.dependencies.groupBy { it.id }
@@ -749,11 +749,11 @@ fun ModVersionDependenciesContent(
                     DependencyItemCard(id, versions, onOpenMod, false)
                 }
             } else {
-                item { EmptySectionText("None") }
+                item { EmptySectionText(StringResources.depsNone()) }
             }
 
             item {
-                DependencyHeader("Incompatibilities", MaterialTheme.colorScheme.error)
+                DependencyHeader(StringResources.depsIncompatibilities(), MaterialTheme.colorScheme.error)
             }
             if (artifact.incompatibilities.isNotEmpty()) {
                 val groupedIncompats = artifact.incompatibilities.groupBy { it.id }
@@ -762,18 +762,18 @@ fun ModVersionDependenciesContent(
                     DependencyItemCard(id, versions, onOpenMod, true)
                 }
             } else {
-                item { EmptySectionText("None") }
+                item { EmptySectionText(StringResources.depsNone()) }
             }
 
             item {
-                DependencyHeader("Dependents", MaterialTheme.colorScheme.onSurface)
+                DependencyHeader(StringResources.depsDependents(), MaterialTheme.colorScheme.onSurface)
             }
             if (dependents.isNotEmpty()) {
                 items(dependents) { (id, versions) ->
                     DependencyItemCard(id, versions, onOpenMod, false)
                 }
             } else {
-                item { EmptySectionText("None") }
+                item { EmptySectionText(StringResources.depsNone()) }
             }
         }
 
@@ -853,7 +853,7 @@ private fun DependencyItemCard(
                 )
             } else {
                 Text(
-                    text = "MISSING",
+                    text = StringResources.depsMissing(),
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.error

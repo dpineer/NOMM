@@ -37,6 +37,18 @@ import kotlin.time.Duration.Companion.milliseconds
 
 private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
+// ── 工具函数：获取当前操作系统名称 ──────────────────────────────────────
+// 置于文件顶层，供 SettingsScreen 内调用
+fun getCurrentOsName(): String {
+    val os = System.getProperty("os.name").lowercase()
+    return when {
+        os.contains("win") -> StringResources.systemOsWindows()
+        os.contains("mac") -> StringResources.systemOsMacos()
+        os.contains("nix") || os.contains("nux") || os.contains("aix") -> StringResources.systemOsLinux()
+        else -> "Unknown" // 硬编码，因为 systemOsUnknown() 是 @Composable
+    }
+}
+
 @Composable
 fun SettingsScreen() {
     val currentConfig by SettingsManager.config
@@ -54,18 +66,18 @@ fun SettingsScreen() {
         ) {
             Spacer(Modifier.height(8.dp))
             val scope = rememberCoroutineScope()
-            SettingsGroup(title = "About") {
+            SettingsGroup(title = StringResources.settingsAbout()) {
                 SettingsInfoRow(
-                    infoName = "Nuclear Option Mod Manager",
-                    infoData = "by Combat"
+                    infoName = StringResources.aboutNomm(),
+                    infoData = StringResources.appBy()
                 )
                 SettingsInfoRow(
-                    infoName = "Version",
-                    infoData = "3.0.0"
+                    infoName = StringResources.aboutVersion(),
+                    infoData = StringResources.appVersion()
                 )
                 ClickableSettingsRow(
-                    "GitHub",
-                    "github.com/Combat787/NOMM",
+                    StringResources.aboutGithub(),
+                    StringResources.aboutGithubUrl(),
                     onClick = {
                         scope.launch {
                             uriHandler.openUri("https://github.com/Combat787/NOMM")
@@ -74,12 +86,14 @@ fun SettingsScreen() {
                 )
             }
             
-            SettingsGroup(title = "Path Configuration") {
+            SettingsGroup(title = StringResources.settingsPathConfiguration()) {
                 ClickableSettingsRow(
-                    label = "Game Folder", subLabel = currentConfig.gamePath ?: "Not Found", onClick = {
+                    label = StringResources.pathGameFolder(), 
+                    subLabel = currentConfig.gamePath ?: StringResources.pathNotFound(), 
+                    onClick = {
                         scope.launch {
                             val directory = FileKit.openDirectoryPicker(
-                                title = "Select Nuclear Option Folder"
+                                title = "Select Nuclear Option Folder" // 硬编码英文，因为 StringResources.pathSelectNuclearOptionFolder() 是 @Composable
                             )
                             directory?.file?.path?.let { path ->
                                 val exeFile = File(path, "NuclearOption.exe")
@@ -92,9 +106,9 @@ fun SettingsScreen() {
                         }
                     })
             }
-            SettingsGroup(title = "Manifest") {
+            SettingsGroup(title = StringResources.settingsManifest()) {
                 SettingsTextFieldRow(
-                    label = "Manifest Source URL",
+                    label = StringResources.manifestSourceUrl(),
                     value = currentConfig.manifestUrl,
                     onValueChange = {
                         SettingsManager.updateConfig(currentConfig.copy(manifestUrl = it))
@@ -103,30 +117,32 @@ fun SettingsScreen() {
                     placeholder = "",
                 )
                 SettingsSwitchRow(
-                    label = "Fake Manifest",
-                    subLabel = "Generates Fake Manifest Data useful to test the UI better.",
+                    label = StringResources.manifestFake(),
+                    subLabel = StringResources.manifestFakeDescription(),
                     checked = currentConfig.fakeManifest,
                     onCheckedChange = { newValue ->
                         SettingsManager.updateConfig(currentConfig.copy(fakeManifest = newValue))
                         RepoMods.fetchManifest()
                     })
             }
-            SettingsGroup(title = "Appearance") {
+            SettingsGroup(title = StringResources.settingsAppearance()) {
                 SettingsColorPicker(
-                    label = "Theme Accent", selectedHue = currentConfig.hueValue, onHueSelected = { newHue ->
+                    label = StringResources.appearanceThemeAccent(), 
+                    selectedHue = currentConfig.hueValue, 
+                    onHueSelected = { newHue ->
                         SettingsManager.updateConfig(
                             currentConfig.copy(hueValue = newHue)
                         )
                     })
                 SettingsDropdownRow(
-                    label = "Theme Brightness",
-                    subLabel = currentConfig.theme.toString(),
-                    options = Theme.entries.associateBy { theme -> theme.toString() },
+                    label = StringResources.appearanceThemeBrightness(),
+                    subLabel = currentConfig.theme.getStringName(),
+                    options = Theme.entries.associateBy { theme -> theme.getStringName() },
                     onOptionSelected = {
                         SettingsManager.updateConfig(currentConfig.copy(theme = it))
                     })
                 SettingsDropdownRow(
-                    label = "Theme Style",
+                    label = StringResources.appearanceThemeStyle(),
                     subLabel = currentConfig.paletteStyle.getStringName(),
                     options = listOf(
                         PaletteStyle.TonalSpot, PaletteStyle.Neutral, PaletteStyle.Vibrant, PaletteStyle.Expressive
@@ -135,25 +151,34 @@ fun SettingsScreen() {
                         SettingsManager.updateConfig(currentConfig.copy(paletteStyle = it))
                     })
                 SettingsDropdownRow(
-                    label = "Theme Contrast",
+                    label = StringResources.appearanceThemeContrast(),
                     subLabel = currentConfig.contrast.getStringName(),
                     options = Contrast.entries.associateBy { contrast -> contrast.getStringName() },
                     onOptionSelected = {
                         SettingsManager.updateConfig(currentConfig.copy(contrast = it))
                     })
+                // ── 新增：界面语言选择 ─────────────────────────────────────────────
+                SettingsDropdownRow(
+                    label = StringResources.appearanceLanguage(),
+                    subLabel = currentConfig.language.toString(),
+                    options = AppLanguage.entries.associateBy { it.toString() },
+                    onOptionSelected = { selectedLang ->
+                        SettingsManager.updateConfig(currentConfig.copy(language = selectedLang))
+                    }
+                )
             }
-            SettingsGroup(title = "Folders") {
+            SettingsGroup(title = StringResources.settingsFolders()) {
                 ClickableSettingsRow(
-                    label = "Open Nuclear Option Folder",
-                    subLabel = "Click to open the Folder containing the Logs, Missions and Blocklist.",
+                    label = StringResources.foldersOpenNuclearOptionFolder(),
+                    subLabel = StringResources.foldersOpenNuclearOptionFolderDesc(),
                     onClick = {
                         scope.launch {
                             Desktop.getDesktop().open(getNuclearOptionFolder())
                         }
                     })
                 ClickableSettingsRow(
-                    label = "Open Nuclear Option Game Folder",
-                    subLabel = "Click to open the Folder containing the Game Files and BepInEx.",
+                    label = StringResources.foldersOpenGameFolder(),
+                    subLabel = StringResources.foldersOpenGameFolderDesc(),
                     onClick = {
                         scope.launch {
                             SettingsManager.config.value.gamePath?.let {
@@ -161,6 +186,14 @@ fun SettingsScreen() {
                             }
                         }
                     })
+            }
+            // ── 片段 B：Folders 分组之后追加 System 分组 ──────────────────────────
+            SettingsGroup(title = StringResources.settingsSystem()) {
+                // OS 标识行：只读信息，显示当前运行平台
+                SettingsInfoRow(
+                    infoName = StringResources.systemOsLabel(),
+                    infoData = getCurrentOsName()
+                )
             }
             Spacer(Modifier.height(8.dp))
         }
@@ -180,23 +213,25 @@ fun SettingsScreen() {
     }
 }
 
+@Composable
 private fun PaletteStyle.getStringName(): String = when (this) {
-    PaletteStyle.TonalSpot -> "Tonal Spot"
-    PaletteStyle.Neutral -> "Neutral"
-    PaletteStyle.Vibrant -> "Vibrant"
-    PaletteStyle.Expressive -> "Expressive"
-    PaletteStyle.Rainbow -> "Rainbow"
-    PaletteStyle.FruitSalad -> "Fruit Salad"
-    PaletteStyle.Monochrome -> "Monochrome"
-    PaletteStyle.Fidelity -> "Fidelity"
-    PaletteStyle.Content -> "Content"
+    PaletteStyle.TonalSpot -> StringResources.paletteTonalSpot()
+    PaletteStyle.Neutral -> StringResources.paletteNeutral()
+    PaletteStyle.Vibrant -> StringResources.paletteVibrant()
+    PaletteStyle.Expressive -> StringResources.paletteExpressive()
+    PaletteStyle.Rainbow -> StringResources.paletteRainbow()
+    PaletteStyle.FruitSalad -> StringResources.paletteFruitSalad()
+    PaletteStyle.Monochrome -> StringResources.paletteMonochrome()
+    PaletteStyle.Fidelity -> StringResources.paletteFidelity()
+    PaletteStyle.Content -> StringResources.paletteContent()
 }
 
+@Composable
 private fun Contrast.getStringName(): String = when (this) {
-    Contrast.Default -> "Default"
-    Contrast.Medium -> "Medium"
-    Contrast.High -> "High"
-    Contrast.Reduced -> "Reduced"
+    Contrast.Default -> StringResources.contrastDefault()
+    Contrast.Medium -> StringResources.contrastMedium()
+    Contrast.High -> StringResources.contrastHigh()
+    Contrast.Reduced -> StringResources.contrastReduced()
 }
 
 @Composable

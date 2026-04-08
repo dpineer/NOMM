@@ -51,7 +51,7 @@ fun MainNavigationRail(
                     backStack.add(MainNavigation.Search)
                 },
                 drawableResource = Res.drawable.search_24px,
-                label = "Discover"
+                label = StringResources.navDiscover()
             )
             RailDestination(
                 selected = currentKey is MainNavigation.Libraries,
@@ -60,7 +60,7 @@ fun MainNavigationRail(
                     backStack.add(MainNavigation.Libraries)
                 },
                 drawableResource = Res.drawable.newsstand_24px,
-                label = "Library"
+                label = StringResources.navLibrary()
             )
             RailDestination(
                 selected = currentKey is MainNavigation.Settings,
@@ -69,7 +69,7 @@ fun MainNavigationRail(
                     backStack.add(MainNavigation.Settings)
                 },
                 drawableResource = Res.drawable.settings_24px,
-                label = "Settings"
+                label = StringResources.navSettings()
             )
             Spacer(modifier = Modifier.weight(1f))
 
@@ -135,16 +135,42 @@ fun MainNavigationRail(
 }
 
 fun launchNuclearOption() {
-    val exeFile = File(SettingsManager.gameFolder, "NuclearOption.exe")
-    if (exeFile.exists()) {
-        scope.launch(Dispatchers.IO) {
-            try {
-                ProcessBuilder(exeFile.absolutePath)
-                    .directory(exeFile.parentFile)
-                    .start()
-            } catch (e: Exception) {
-                e.printStackTrace()
+    val os = System.getProperty("os.name").lowercase()
+    val isWindows = os.contains("win")
+
+    scope.launch(Dispatchers.IO) {
+        try {
+            if (isWindows) {
+                // Windows：直接执行游戏可执行文件
+                val exeFile = File(SettingsManager.gameFolder, "NuclearOption.exe")
+                if (exeFile.exists()) {
+                    ProcessBuilder(exeFile.absolutePath)
+                        .directory(exeFile.parentFile)
+                        .start()
+                }
+            } else {
+                // Linux / macOS：通过 Steam URI 协议启动，由 Steam+Proton 处理运行时
+                // Nuclear Option 的 Steam AppID 为 2168680
+                val steamAppId = "2168680"
+                val steamUri = "steam://rungameid/$steamAppId"
+
+                // 优先使用 xdg-open（标准 XDG 桌面协议处理器）
+                val xdgResult = runCatching {
+                    ProcessBuilder("xdg-open", steamUri)
+                        .redirectErrorStream(true)
+                        .start()
+                        .waitFor()
+                }
+
+                // 若 xdg-open 失败，回退到直接调用 steam 命令行
+                if (xdgResult.isFailure || xdgResult.getOrDefault(1) != 0) {
+                    ProcessBuilder("steam", "-applaunch", steamAppId)
+                        .redirectErrorStream(true)
+                        .start()
+                }
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 }
