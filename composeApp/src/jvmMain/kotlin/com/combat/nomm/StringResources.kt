@@ -41,6 +41,8 @@ object StringResources {
     @Composable fun aboutVersion() = t("Version", "版本")
     @Composable fun aboutGithub() = "GitHub"
     @Composable fun aboutGithubUrl() = "github.com/Combat787/NOMM"
+    @Composable fun aboutBranchUrl() = "github.com/dpineer/NOMM"
+    @Composable fun aboutMaintainer() = t("Maintained by", "当前分支维护者")
 
     // ── Path ─────────────────────────────────────────────────────────
     @Composable fun pathGameFolder() = t("Game Folder", "游戏目录")

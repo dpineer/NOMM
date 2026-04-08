@@ -84,6 +84,15 @@ fun SettingsScreen() {
                         }
                     }
                 )
+                ClickableSettingsRow(
+                    StringResources.aboutMaintainer(),
+                    StringResources.aboutBranchUrl(),
+                    onClick = {
+                        scope.launch {
+                            uriHandler.openUri("https://github.com/dpineer/NOMM")
+                        }
+                    }
+                )
             }
             
             SettingsGroup(title = StringResources.settingsPathConfiguration()) {
