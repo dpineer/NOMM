@@ -20,6 +20,9 @@ import kotlinx.serialization.json.Json
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
+import java.util.zip.ZipEntry
+import java.util.zip.ZipInputStream
+import java.util.zip.ZipOutputStream
 
 object LocalMods {
     val json = Json {
@@ -112,6 +115,152 @@ object LocalMods {
                     e.printStackTrace()
                 }
             }
+        }
+    }
+
+    fun exportModsZip() {
+        scope.launch {
+            try {
+                val zipFile = FileKit.openFileSaver(
+                    suggestedName = "modpack",
+                    extension = "zip"
+                )
+
+                zipFile?.file?.let { file ->
+                    val enabledMods = mods.value.filter { it.value.enabled == true }
+                    val exportData = json.encodeToString(
+                        enabledMods.map { PackageReference(it.value.id, it.value.artifact?.version) }
+                    )
+
+                    file.outputStream().use { fileOut ->
+                        ZipOutputStream(fileOut).use { zipOut ->
+                            // 写入modpack.json
+                            val modpackEntry = ZipEntry("modpack.json")
+                            zipOut.putNextEntry(modpackEntry)
+                            zipOut.write(exportData.toByteArray())
+                            zipOut.closeEntry()
+
+                            // 为每个启用的Mod添加文件和meta.json
+                            enabledMods.forEach { (_, modMeta) ->
+                                val modFile = modMeta.file ?: return@forEach
+                                if (modFile.exists()) {
+                                    addFileToZip(zipOut, modFile, "mods/${modMeta.id}/")
+                                    
+                                    // 添加meta.json
+                                    val metaData = modMeta.copy(
+                                        enabled = null,
+                                        file = null,
+                                        isUnidentified = false,
+                                        hasUpdate = false,
+                                        problems = emptyList()
+                                    )
+                                    val metaJson = json.encodeToString(metaData)
+                                    val metaEntry = ZipEntry("mods/${modMeta.id}/meta.json")
+                                    zipOut.putNextEntry(metaEntry)
+                                    zipOut.write(metaJson.toByteArray())
+                                    zipOut.closeEntry()
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun importModsZip() {
+        scope.launch {
+            val file = FileKit.openFilePicker(
+                title = "Import Modpack",
+                type = FileKitType.File(extension = "zip"),
+            )
+
+            file?.let { platformFile ->
+                try {
+                    val tempDir = File(System.getProperty("java.io.tmpdir"), "nomm_import_${System.currentTimeMillis()}")
+                    tempDir.mkdirs()
+
+                    // 解压zip文件
+                    platformFile.file.inputStream().use { fileIn ->
+                        ZipInputStream(fileIn).use { zipIn ->
+                            var entry = zipIn.nextEntry
+                            while (entry != null) {
+                                if (!entry.isDirectory) {
+                                    val entryFile = File(tempDir, entry.name)
+                                    entryFile.parentFile?.mkdirs()
+                                    entryFile.outputStream().use { out ->
+                                        zipIn.copyTo(out)
+                                    }
+                                }
+                                entry = zipIn.nextEntry
+                            }
+                        }
+                    }
+
+                    // 读取modpack.json
+                    val modpackJsonFile = File(tempDir, "modpack.json")
+                    val imported: List<PackageReference> = if (modpackJsonFile.exists()) {
+                        json.decodeFromString(modpackJsonFile.readText())
+                    } else {
+                        emptyList()
+                    }
+
+                    // 确保获取最新的Manifest
+                    RepoMods.fetchManifest()
+
+                    // 处理每个Mod
+                    val modsDir = File(tempDir, "mods")
+                    if (modsDir.exists()) {
+                        modsDir.listFiles()?.forEach { modFolder ->
+                            if (modFolder.isDirectory) {
+                                val modId = modFolder.name
+                                val existingMod = mods.value[modId]
+
+                                // 如果Mod不存在，则从临时目录复制
+                                if (existingMod == null) {
+                                    val pluginsDir = File(SettingsManager.bepInExFolder, "plugins")
+                                    pluginsDir.mkdirs()
+                                    modFolder.copyRecursively(File(pluginsDir, modId), overwrite = true)
+                                }
+                            }
+                        }
+                    }
+
+                    // 同步导入的Mod与本地Mod的启用/禁用状态
+                    val importedIds = imported.map { it.id }
+                    loadInstalledModMetas()
+                    
+                    mods.value.forEach { (_, meta) ->
+                        if (importedIds.contains(meta.id)) {
+                            meta.enable()
+                        } else if (meta.enabled == true) {
+                            meta.disable()
+                        }
+                    }
+
+                    // 清理临时目录
+                    tempDir.deleteRecursively()
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
+    }
+
+    private fun addFileToZip(zipOut: ZipOutputStream, file: File, baseDir: String) {
+        if (file.isDirectory) {
+            file.listFiles()?.forEach { child ->
+                addFileToZip(zipOut, child, baseDir + file.name + "/")
+            }
+        } else {
+            val entry = ZipEntry(baseDir + file.name)
+            zipOut.putNextEntry(entry)
+            file.inputStream().use { input ->
+                input.copyTo(zipOut)
+            }
+            zipOut.closeEntry()
         }
     }
 

@@ -100,6 +100,8 @@ object StringResources {
     // ── Library Screen ───────────────────────────────────────────────
     @Composable fun libraryExportModpack() = t("Export Modpack", "导出模组包")
     @Composable fun libraryImportModpack() = t("Import Modpack", "导入模组包")
+    @Composable fun libraryExportModpackZip() = t("Export Modpack (ZIP)", "导出模组包 (ZIP)")
+    @Composable fun libraryImportModpackZip() = t("Import Modpack (ZIP)", "导入模组包 (ZIP)")
     @Composable fun libraryAddFromFile() = t("Add from file", "从文件添加")
     @Composable fun libraryOptions() = t("Options", "选项")
     @Composable fun libraryNothingHere() = t("Nothing here. huh", "这里什么都没有。")

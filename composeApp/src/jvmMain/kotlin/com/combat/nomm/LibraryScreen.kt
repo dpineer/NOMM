@@ -95,7 +95,7 @@ fun LibraryScreen(
                             containerColor = MaterialTheme.colorScheme.secondary,
                             expanded = menuExpanded, onDismissRequest = { menuExpanded = false }) {
                             DropdownMenuItem(
-                                text = { Text("Export Modpack") },
+                                text = { Text(StringResources.libraryExportModpack()) },
                                 onClick = {
                                     menuExpanded = false
                                     LocalMods.exportMods()
@@ -103,13 +103,31 @@ fun LibraryScreen(
                                 leadingIcon = { Icon(painterResource(Res.drawable.file_export_24px), null) },
                                 colors = itemColors,
                             )
-                            DropdownMenuItem(text = { Text("Import Modpack") }, onClick = {
+                            DropdownMenuItem(text = { Text(StringResources.libraryImportModpack()) }, onClick = {
                                 menuExpanded = false
                                 LocalMods.importMods()
                             }, leadingIcon = { Icon(painterResource(Res.drawable.file_open_24px), null) },
                                 colors = itemColors
                             )
-                            DropdownMenuItem(text = { Text("Add from file") }, onClick = {
+                            DropdownMenuItem(
+                                text = { Text(StringResources.libraryExportModpackZip()) },
+                                onClick = {
+                                    menuExpanded = false
+                                    LocalMods.exportModsZip()
+                                },
+                                leadingIcon = { Icon(painterResource(Res.drawable.file_export_24px), null) },
+                                colors = itemColors,
+                            )
+                            DropdownMenuItem(
+                                text = { Text(StringResources.libraryImportModpackZip()) },
+                                onClick = {
+                                    menuExpanded = false
+                                    LocalMods.importModsZip()
+                                },
+                                leadingIcon = { Icon(painterResource(Res.drawable.file_open_24px), null) },
+                                colors = itemColors,
+                            )
+                            DropdownMenuItem(text = { Text(StringResources.libraryAddFromFile()) }, onClick = {
                                 menuExpanded = false
                                 LocalMods.addFromFile()
                             }, leadingIcon = { Icon(painterResource(Res.drawable.folder_open_24px), null) },
