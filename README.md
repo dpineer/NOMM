@@ -95,6 +95,36 @@ cd NOMM
 # 输出文件位于：composeApp/build/compose/jars/
 ```
 
+### Debian 13 自动编译运行脚本
+对于 Debian 13 用户，我们提供了一个自动化的构建脚本，可以自动检查依赖、构建和运行应用程序：
+
+```bash
+# 1. 给脚本添加执行权限
+chmod +x build-and-run.sh
+
+# 2. 查看帮助信息
+./build-and-run.sh --help
+
+# 3. 构建并运行应用程序 (默认)
+./build-and-run.sh
+
+# 4. 构建可执行文件
+./build-and-run.sh --package
+
+# 5. 仅检查依赖
+./build-and-run.sh --deps
+```
+
+脚本功能包括：
+- 自动检测 Debian 13 系统
+- 检查并安装 Java JDK 21+
+- 检查系统依赖
+- 构建应用程序
+- 运行应用程序或构建可执行文件
+- 清理构建缓存
+
+详细使用说明请查看 [QUICK_START_DEBIAN.md](QUICK_START_DEBIAN.md)。
+
 ## 界面语言设置
 
 NOMM 支持多语言界面：
